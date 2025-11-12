@@ -1,0 +1,235 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Pinned Overlay Text with Fade + Slide</title>
+  <style>
+    html,body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: black;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto;
+      color: white;
+    }
+
+    #preload {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f2f2f3;
+      z-index: 1000;
+    }
+
+/* INTRO SECTION WITH IMAGE LEFT, TEXT RIGHT */
+    #intro1 {
+      background: white;
+      color: rgb(0, 0, 0);
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 80px 20px;
+      padding-top: 0px;
+      gap: 20px;
+      z-index: 1;
+    }     
+    #intro {
+      background: white;
+      color: rgb(0, 0, 0);
+      min-height: 0vh;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      padding: 80px 40px;
+      padding-bottom: 0px;
+      gap: 40px;
+      z-index: 1;
+    }
+
+#full-screen-bg {
+  position: absolute;    /* relative to its parent */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  z-index: 1;
+}
+
+    #intro .intro-image {
+      flex: 1;
+      max-width: 500px;
+      border-radius: 16px;
+      z-index: 2;
+    }
+
+    #intro .intro-text {
+      flex: 1;
+      font-size: clamp(42px, 2vw, 32px);
+      line-height: 1.4;
+      z-index: 2;
+    }
+.presentation-text {
+  flex: 1;
+  text-align: center;
+  font-size: clamp(42px, 2vw, 32px);
+  line-height: 1.4;
+  z-index: 2;
+  margin-top: -60px; /* move it up */
+}
+
+
+    #images {
+      position: relative;
+      height: 12000px;
+      z-index: 0;
+    }
+
+    img.sequencer {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      min-height: 100%;
+      width: auto;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .overlay-text {
+      position: fixed;
+      top: 30%;
+      left: 38%;
+      transform: translate(-50%, -50%) translateY(0px);
+      width: 100%;
+      max-width: 1200px;
+      text-align: left;
+      font-size: clamp(32px, 8vw, 120px);
+      font-weight: 800;
+      color: white;
+      text-shadow: 0 6px 24px rgba(0,0,0,0.6);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 50;
+      will-change: transform, opacity;
+    }
+
+    .specific-space {
+  margin-left: 150px; /* Adds 20px of space to the left of the wrapped text */
+  padding-right: 150px; /* Adds 15px of space to the right of the wrapped text */
+}
+  </style>
+</head>
+<body>
+  <div id="preload"><h1>Loading...</h1></div>
+
+              <div id="full-screen-bg"></div>
+
+              <section id="intro1">
+    <section id="intro">
+    <img class="intro-image" src="./intro.jpg" alt="Intro Image">
+    <div class="intro-text">
+      <h1>This is Me</h1>
+      <p>Im 18y.o. Game Developer, i use Unity for making   games since im 14.
+        I have experience with most of Unity's functionality. <br><br>
+        Recently i worked on my personal project about a<br>Mental Asylum in a Medieval Castle<br><br>
+        Further are shown all the functionality i implemented
+        </p>
+      </div>
+  </section>
+
+    <div class="presentation-text">
+    <h1> ↓ <span class="specific-space"></span>↓ </h1>
+  </div>
+
+  </section>
+
+<div id="images-wrapper">
+  <div id="images">
+    <img class="sequencer" src="./images/0001.jpg" alt="sequence">
+
+    <div id="text1" class="overlay-text">This is the first message</div>
+    <div id="text2" class="overlay-text">URP</div>
+    <div id="text3" class="overlay-text">Game Physics</div>
+    <div id="text4" class="overlay-text">NPC Behaviour</div>
+    <div id="text5" class="overlay-text">?? ???<br>???? ?? ??? ?????</div>
+  </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script src="jquery-sequencer.js"></script>
+
+  <script>
+    $("div#images").sequencer({
+      count: 430,
+      path: "./images",
+      ext: "jpg"
+    }, function() {
+      document.getElementById('preload').style.display = 'none';
+    });
+
+    const texts = [
+      { id: 'text1', start: 1300, end: 2300 },
+      { id: 'text2', start: 3300, end: 5000 },
+      { id: 'text3', start: 5300, end: 6900 },
+      { id: 'text4', start: 7400, end: 8900 },
+      { id: 'text5', start: 9500, end: 10500 }
+    ];
+
+    const imagesWrapper = document.getElementById('images-wrapper');
+    const intro = document.getElementById('intro');
+    const images = document.getElementById('images');
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    function handleScroll() {
+      const scrollY = window.scrollY;
+
+      // Only show sequencer after scrolling past intro
+        imagesWrapper.style.position = 'sticky';
+        imagesWrapper.style.top = '0';
+
+      // Offset scroll to start sequencer after intro
+      const sequenceScroll = scrollY;
+
+      texts.forEach(t => {
+        const el = document.getElementById(t.id);
+
+        const fadeInStart = t.start;
+        const fadeInEnd = t.start + 300;
+        const fadeOutStart = t.end - 300;
+        const fadeOutEnd = t.end;
+
+        let opacity = 0;
+        let offsetStrength = 500;
+        let offsetY = offsetStrength;
+
+        if (sequenceScroll >= fadeInStart && sequenceScroll <= fadeInEnd) {
+          const progress = (sequenceScroll - fadeInStart) / (fadeInEnd - fadeInStart);
+          opacity = progress;
+          offsetY = (1 - progress) * offsetStrength;
+        } else if (sequenceScroll > fadeInEnd && sequenceScroll < fadeOutStart) {
+          opacity = 1;
+          offsetY = 0;
+        } else if (sequenceScroll >= fadeOutStart && sequenceScroll <= fadeOutEnd) {
+          const progress = (sequenceScroll - fadeOutStart) / (fadeOutEnd - fadeOutStart);
+          opacity = 1 - progress;
+          offsetY = progress * -offsetStrength;
+        } else {
+          opacity = 0;
+          offsetY = offsetStrength;
+        }
+
+        el.style.opacity = opacity;
+        el.style.transform = `translate(-50%, -50%) translateY(${offsetY}px)`;
+      });
+    }
+
+    handleScroll();
+  </script>
+</body>
