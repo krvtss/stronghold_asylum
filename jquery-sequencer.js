@@ -120,20 +120,24 @@ options = $.extend({
       }
     }
 
-    // Listen for scroll events
+// Listen for scroll events
     $(window).on("scroll resize", function() {
-      sectionHeight = $(self).height();
-      windowHeight = $(this).height();
+      // Only calculate target index if smoothPlayback is disabled
+      if (!options.smoothPlayback) {
+        sectionHeight = $(self).height();
+        windowHeight = $(this).height();
         currentScroll = Math.max(0, $(this).scrollTop() - options.scrollOffset); 
-      percentageScroll = 100 * currentScroll / (sectionHeight - windowHeight);
-      index = Math.round(percentageScroll / 100 * (paths.length - 1));
-      if (index < 0) index = 0;
-      if (index >= paths.length) index = paths.length - 1;
+        percentageScroll = 100 * currentScroll / (sectionHeight - windowHeight);
+        index = Math.round(percentageScroll / 100 * (paths.length - 1));
+        if (index < 0) index = 0;
+        if (index >= paths.length) index = paths.length - 1;
 
-      if (index !== currentIndex) {
-        currentIndex = index;
-        showFrame(index);
+        if (index !== currentIndex) {
+          currentIndex = index;
+          showFrame(index);
+        }
       }
+      // If smoothPlayback is enabled, the main script handles frame updates
     });
 
     // Initialize: aggressive loading strategy
@@ -160,7 +164,9 @@ options = $.extend({
         }
       });
     });
-
+// Expose showFrame method for external control
+    this.showFrame = showFrame;
+    window.sequencerInstance = this;
     return this;
   };
 

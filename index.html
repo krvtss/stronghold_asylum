@@ -170,7 +170,7 @@
     <img class="sequencer" src="./images/0001.jpg" alt="sequence">
 
     <div id="text1" class="overlay-text">This is the first message</div>
-    <div id="text2" class="overlay-text">URP</div>
+    <div id="text2" class="overlay-text">Universal Render Pipeline</div>
     <div id="text3" class="overlay-text">Game Physics</div>
     <div id="text4" class="overlay-text">NPC Behaviour</div>
     <div id="text5" class="overlay-text">?? ???<br>???? ?? ??? ?????</div>
@@ -203,77 +203,115 @@
 
 <script>
   let introHeight = 0;
+  let targetIndex = 0;
+  let currentDisplayIndex = 0;
+  let animationFrameId = null;
+  const FPS = 120;
+  const frameTime = 1000 / FPS;
+  let lastFrameTime = 0;
 
   // Calculate intro height first, then initialize sequencer
-window.addEventListener('load', function() {
-  introHeight = document.getElementById('intro1').offsetHeight;
-  
-  $("div#images").sequencer({
-    count: 430,
-    path: "./images",
-    ext: "jpg",
-    scrollOffset: 0  // Start from 0 so images scroll from the beginning
-  }, function() {
-    document.getElementById('preload').style.display = 'none';
+  window.addEventListener('load', function() {
+    introHeight = document.getElementById('intro1').offsetHeight;
+    
+    $("div#images").sequencer({
+      count: 430,
+      path: "./images",
+      ext: "jpg",
+      scrollOffset: 0,
+      smoothPlayback: true  // Enable smooth playback mode
+    }, function() {
+      document.getElementById('preload').style.display = 'none';
+      startSmoothPlayback();
+    });
   });
-});
 
-    const texts = [
-      { id: 'text1', start: 1300, end: 2300 },
-      { id: 'text2', start: 3300, end: 5000 },
-      { id: 'text3', start: 5300, end: 6900 },
-      { id: 'text4', start: 7400, end: 8900 },
-      { id: 'text5', start: 9500, end: 10500 }
-    ];
+  function startSmoothPlayback() {
+    function animate(timestamp) {
+      if (!lastFrameTime) lastFrameTime = timestamp;
+      const elapsed = timestamp - lastFrameTime;
 
-    const imagesWrapper = document.getElementById('images-wrapper');
-    const intro = document.getElementById('intro');
-    const images = document.getElementById('images');
+      if (elapsed >= frameTime) {
+        if (currentDisplayIndex !== targetIndex) {
+          // Move one frame closer to target
+          if (currentDisplayIndex < targetIndex) {
+            currentDisplayIndex++;
+          } else {
+            currentDisplayIndex--;
+          }
+          
+          // Manually trigger frame display
+          if (window.sequencerInstance) {
+            window.sequencerInstance.showFrame(currentDisplayIndex);
+          }
+        }
+        
+        lastFrameTime = timestamp;
+      }
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
+      animationFrameId = requestAnimationFrame(animate);
+    }
 
-function handleScroll() {
-  const scrollY = window.scrollY;
+    animationFrameId = requestAnimationFrame(animate);
+  }
 
+  const texts = [
+    { id: 'text1', start: 1300, end: 2300 },
+    { id: 'text2', start: 3300, end: 5000 },
+    { id: 'text3', start: 5300, end: 6900 },
+    { id: 'text4', start: 7400, end: 8900 },
+    { id: 'text5', start: 9500, end: 10500 }
+  ];
+
+  const imagesWrapper = document.getElementById('images-wrapper');
+
+  window.addEventListener('scroll', handleScroll, { passive: true });
+
+  function handleScroll() {
+    const scrollY = window.scrollY;
     imagesWrapper.style.position = 'sticky';
     imagesWrapper.style.top = '0';
 
-  // Use raw scroll value so text syncs with images from the beginning
-  const sequenceScroll = scrollY;
+    const sequenceScroll = scrollY;
+    
+    // Calculate target index based on scroll
+    const sectionHeight = document.getElementById('images').offsetHeight;
+    const windowHeight = window.innerHeight;
+    const currentScroll = Math.max(0, scrollY);
+    const percentageScroll = 100 * currentScroll / (sectionHeight - windowHeight);
+    targetIndex = Math.round(percentageScroll / 100 * 429); // 430 images (0-429)
+    if (targetIndex < 0) targetIndex = 0;
+    if (targetIndex > 429) targetIndex = 429;
 
-      texts.forEach(t => {
-        const el = document.getElementById(t.id);
+    texts.forEach(t => {
+      const el = document.getElementById(t.id);
+      const fadeInStart = t.start;
+      const fadeInEnd = t.start + 300;
+      const fadeOutStart = t.end - 300;
+      const fadeOutEnd = t.end;
 
-        const fadeInStart = t.start;
-        const fadeInEnd = t.start + 300;
-        const fadeOutStart = t.end - 300;
-        const fadeOutEnd = t.end;
+      let opacity = 0;
+      let offsetStrength = 500;
+      let offsetY = offsetStrength;
 
-        let opacity = 0;
-        let offsetStrength = 500;
-        let offsetY = offsetStrength;
+      if (sequenceScroll >= fadeInStart && sequenceScroll <= fadeInEnd) {
+        const progress = (sequenceScroll - fadeInStart) / (fadeInEnd - fadeInStart);
+        opacity = progress;
+        offsetY = (1 - progress) * offsetStrength;
+      } else if (sequenceScroll > fadeInEnd && sequenceScroll < fadeOutStart) {
+        opacity = 1;
+        offsetY = 0;
+      } else if (sequenceScroll >= fadeOutStart && sequenceScroll <= fadeOutEnd) {
+        const progress = (sequenceScroll - fadeOutStart) / (fadeOutEnd - fadeOutStart);
+        opacity = 1 - progress;
+        offsetY = progress * -offsetStrength;
+      }
 
-        if (sequenceScroll >= fadeInStart && sequenceScroll <= fadeInEnd) {
-          const progress = (sequenceScroll - fadeInStart) / (fadeInEnd - fadeInStart);
-          opacity = progress;
-          offsetY = (1 - progress) * offsetStrength;
-        } else if (sequenceScroll > fadeInEnd && sequenceScroll < fadeOutStart) {
-          opacity = 1;
-          offsetY = 0;
-        } else if (sequenceScroll >= fadeOutStart && sequenceScroll <= fadeOutEnd) {
-          const progress = (sequenceScroll - fadeOutStart) / (fadeOutEnd - fadeOutStart);
-          opacity = 1 - progress;
-          offsetY = progress * -offsetStrength;
-        } else {
-          opacity = 0;
-          offsetY = offsetStrength;
-        }
+      el.style.opacity = opacity;
+      el.style.transform = `translate(-50%, -50%) translateY(${offsetY}px)`;
+    });
+  }
 
-        el.style.opacity = opacity;
-        el.style.transform = `translate(-50%, -50%) translateY(${offsetY}px)`;
-      });
-    }
-
-    handleScroll();
-  </script>
+  handleScroll();
+</script>
 </body>
