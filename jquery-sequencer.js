@@ -15,18 +15,19 @@
         backgroundLoadingActive = true,
         backgroundLoadIndex = 0;
 
-    // default settings - optimized for faster loading
-    options = $.extend({
-      count: 0,
-      path: ".",
-      ext: "jpg",
-      start: 1,
-      padding: 4,
-      preloadNext: 5,        // increased from 3
-      batchSize: 15,         // increased from 5 for faster loading
-      batchDelay: 50,        // reduced from 100ms for faster batches
-      initialBatch: 30       // load first 30 frames quickly
-    }, options || {});
+// default settings - optimized for faster loading
+options = $.extend({
+  count: 0,
+  path: ".",
+  ext: "jpg",
+  start: 1,
+  padding: 4,
+  preloadNext: 5,
+  batchSize: 15,
+  batchDelay: 50,
+  initialBatch: 30,
+  scrollOffset: 0  // ADD THIS LINE
+}, options || {});
 
     // remove trailing slash if present
     if (options.path.substr(-1) === "/") {
@@ -123,7 +124,7 @@
     $(window).on("scroll resize", function() {
       sectionHeight = $(self).height();
       windowHeight = $(this).height();
-      currentScroll = $(this).scrollTop();
+        currentScroll = Math.max(0, $(this).scrollTop() - options.scrollOffset); 
       percentageScroll = 100 * currentScroll / (sectionHeight - windowHeight);
       index = Math.round(percentageScroll / 100 * (paths.length - 1));
       if (index < 0) index = 0;

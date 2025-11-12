@@ -25,9 +25,8 @@
 
 /* INTRO SECTION WITH IMAGE LEFT, TEXT RIGHT */
     #intro1 {
-      background: rgb(0, 0, 0);
-      color: rgb(0, 0, 0);
-      min-height: 0;
+      min-height: 100;
+      position: relative;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -35,11 +34,9 @@
       padding: 80px 20px;
       padding-top: 0px;
       gap: 20px;
-      z-index: 1;
+      z-index: 2;
     }     
     #intro {
-      background: rgb(0, 0, 0);
-      color: rgb(255, 255, 255);
       min-height: 0vh;
       display: flex;
       flex-direction: row;
@@ -48,16 +45,16 @@
       padding: 80px 40px;
       padding-bottom: 0px;
       gap: 40px;
-      z-index: 1;
+      z-index: 2;
     }
 
-#full-screen-bg {
-  position: absolute;    /* relative to its parent */
+.full-screen-bg {
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgb(0, 0, 0);
+  background-color: #000000;
   z-index: 1;
 }
 
@@ -85,11 +82,11 @@
 }
 
 
-    #images {
-      position: relative;
-      height: 12000px;
-      z-index: 0;
-    }
+#images {
+  position: relative;
+  height: calc(12000px);  /* Subtract outro height so images end when outro appears */
+  z-index: 0;
+}
 
     img.sequencer {
       position: fixed;
@@ -120,6 +117,19 @@
       will-change: transform, opacity;
     }
 
+.outro-section {
+  position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      padding: 80px 40px;
+      padding-bottom: 0px;
+      gap: 40px;
+      z-index: 2;
+}
+
     .specific-space {
   margin-left: 150px; /* Adds 20px of space to the left of the wrapped text */
   padding-right: 150px; /* Adds 15px of space to the right of the wrapped text */
@@ -129,7 +139,10 @@
 <body>
   <div id="preload"><h1>Loading...</h1></div>
 
-              <div id="full-screen-bg"></div>
+
+
+              <!--<div id="full-screen-bg"></div>-->
+<img class="full-screen-bg" src="./curtains.jpg">
 
               <section id="intro1">
     <section id="intro">
@@ -150,6 +163,8 @@
 
   </section>
 
+
+
 <div id="images-wrapper">
   <div id="images">
     <img class="sequencer" src="./images/0001.jpg" alt="sequence">
@@ -162,17 +177,46 @@
   </div>
   </div>
 
+
+
+<!-- BOTTOM SECTION -->
+<section class="outro-section">
+  <img class="full-screen-bg" src="./curtains.jpg">
+
+  <section id="intro">
+    <!--<img class="intro-image" src="./intro.jpg" alt="Intro Image">-->
+    <div class="intro-text">
+      <h1>Contacts:</h1>
+      Kravets Dmytro<br>
+      <p>Telegram: @stalefurnace<br>
+        <a href="www.linkedin.com/in/dmytro-kravets-761656398">LinkedIn</a>
+
+      </p>
+    </div>
+  </section>
+</section>
+
+
+
   <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
   <script src="jquery-sequencer.js"></script>
 
-  <script>
-    $("div#images").sequencer({
-      count: 430,
-      path: "./images",
-      ext: "jpg"
-    }, function() {
-      document.getElementById('preload').style.display = 'none';
-    });
+<script>
+  let introHeight = 0;
+
+  // Calculate intro height first, then initialize sequencer
+window.addEventListener('load', function() {
+  introHeight = document.getElementById('intro1').offsetHeight;
+  
+  $("div#images").sequencer({
+    count: 430,
+    path: "./images",
+    ext: "jpg",
+    scrollOffset: 0  // Start from 0 so images scroll from the beginning
+  }, function() {
+    document.getElementById('preload').style.display = 'none';
+  });
+});
 
     const texts = [
       { id: 'text1', start: 1300, end: 2300 },
@@ -188,15 +232,14 @@
 
     window.addEventListener('scroll', handleScroll, { passive: true });
 
-    function handleScroll() {
-      const scrollY = window.scrollY;
+function handleScroll() {
+  const scrollY = window.scrollY;
 
-      // Only show sequencer after scrolling past intro
-        imagesWrapper.style.position = 'sticky';
-        imagesWrapper.style.top = '0';
+    imagesWrapper.style.position = 'sticky';
+    imagesWrapper.style.top = '0';
 
-      // Offset scroll to start sequencer after intro
-      const sequenceScroll = scrollY;
+  // Use raw scroll value so text syncs with images from the beginning
+  const sequenceScroll = scrollY;
 
       texts.forEach(t => {
         const el = document.getElementById(t.id);
